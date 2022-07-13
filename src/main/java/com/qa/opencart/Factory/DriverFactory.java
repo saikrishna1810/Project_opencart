@@ -32,9 +32,12 @@ public class DriverFactory {
 	public static ThreadLocal<WebDriver> threadlocal = new ThreadLocal<WebDriver>();
 
 	public WebDriver init_driver(Properties prop) {
+		
+		String browserName = System.getProperty("browser");
+
 		optionsmanager = new OptionsManager(prop);
 
-		String browserName = prop.getProperty("browser").trim();
+		//String browserName = prop.getProperty("browser").trim();
 		System.out.println("Browsername" + ":" + browserName);
 
 		if (browserName.equalsIgnoreCase("chrome")) {
