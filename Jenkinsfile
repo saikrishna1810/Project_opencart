@@ -1,70 +1,79 @@
-pipeline{
-   
+pipeline 
+{
     agent any
     
-    stages{
-        
-        stage("Build"){
-            steps{
-                echo("Build Project")
-                
-		}}
-         stage("Run Sits"){
-             
-             steps{
-                 echo ("Run sits")
-                 
-             }
-         }   
-            
-            stage("Deploy dev"){
-                
-                steps{
-                 echo ("Deploy dev")
-                 
-             }
+    tools{
+    	maven 'M3'
+        }
+
+    stages 
+    {
+        stage('Build') 
+        {
+            steps
+            {
+                 git 'https://github.com/jglick/simple-maven-project-with-tests.git'
+                 sh "mvn -Dmaven.test.failure.ignore=true clean package"
             }
-            
-             stage("Deploy QA"){
-                
-                steps{
-                 echo ("Deploy QA")
-                 
-             }
+            post 
+            {
+                success
+                {
+                    junit '**/target/surefire-reports/TEST-*.xml'
+                    archiveArtifacts 'target/*.jar'
+                }
             }
-            
-             stage("run automation tests on QA"){
-                
-                steps{
-                 echo ("run automation tests on QA")
-                 
-             }
-            }
-    
-    stage("Deploy stage"){
-                
-                steps{
-                 echo ("Deploy stage")
-                 
-             }
-            }
-        
-            stage("run automation tests on stage"){
-                
-                steps{
-                 echo ("run automation tests on stage")
-                 
-             }
-            }
-             stage("Deploy Prod"){
-                
-                steps{
-                 echo ("Deploy Prod")
-                 
-             }
-            }
-            
         }
         
+        
+        stage("Deploy to QA"){
+            steps{
+                echo("deploy to qa")
+            }
+        }
+                
+        stage('Regression Automation Test') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    git 'https://github.com/saikrishna1810/Project_opencart.git'
+                    sh "mvn clean install"
+                    
+                }
+            }
+        }
+                
+     
+        stage('Publish Allure Reports') {
+           steps {
+                script {
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [[path: '/allure-results']]
+                    ])
+                }
+            }
+        }
+        
+        
+        stage('Publish Extent Report'){
+            steps{
+                     publishHTML([allowMissing: false,
+                                  alwaysLinkToLastBuild: false, 
+                                  keepAll: false, 
+                                  reportDir: 'build', 
+                                  reportFiles: 'OpencartAutomationResults.html', 
+                                  reportName: 'Open Cart Extent Report', 
+                                  reportTitles: ''])
+            }
+        }
+        
+        stage("Deploy to PROD"){
+            steps{
+                echo("deploy to PROD")
+            }
+        }
     }
-    
+}
