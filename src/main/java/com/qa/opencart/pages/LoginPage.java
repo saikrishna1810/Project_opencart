@@ -19,6 +19,7 @@ public class LoginPage {
 	private By registerlink = By.linkText("Register");
 	private By LogoutMessage = By.cssSelector("div#common-success h1");
 	private By RegisterLink = By.linkText("Register");
+	private By fuck= By.id("test");
 
 	public LoginPage(WebDriver driver) {
 		this.driver = driver;
